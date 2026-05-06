@@ -27,4 +27,16 @@ describe('scoreSession', () => {
     expect(result.overallScore).toBe(60);
     expect(result.masteryLabel).toBe('入门');
   });
+
+  it('does not treat __proto__ question ids as correct when unanswered', () => {
+    const result = scoreSession({
+      dimensions: [{ id: 'edge-cases', name: '边界情况', weight: 1 }],
+      questions: [{ id: '__proto__', dimensionId: 'edge-cases', difficulty: 'easy', correctAnswer: 'A' }],
+      answers: [],
+    });
+
+    expect(result.dimensions).toEqual([{ id: 'edge-cases', name: '边界情况', score: 0 }]);
+    expect(result.overallScore).toBe(0);
+    expect(result.correctnessByQuestionId.__proto__).toBe(false);
+  });
 });

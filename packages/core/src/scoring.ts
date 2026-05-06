@@ -14,7 +14,7 @@ export function scoreSession(input: {
   answers: ScoredAnswer[];
 }) {
   const answersByQuestionId = new Map(input.answers.map((answer) => [answer.questionId, answer]));
-  const correctnessByQuestionId: Record<string, boolean> = {};
+  const correctnessByQuestionId: Record<string, boolean> = Object.create(null) as Record<string, boolean>;
 
   for (const question of input.questions) {
     const answer = answersByQuestionId.get(question.id);
