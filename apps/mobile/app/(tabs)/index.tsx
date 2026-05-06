@@ -1,17 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import type { TextStyle } from "react-native";
 
 import { createSession } from "../../src/api/client";
+import { PrimaryButton, ScreenShell } from "../../src/ui/components";
+import { colors, radius, shadow, spacing, typeScale } from "../../src/ui/theme";
 
 const suggestions = ["React Server Components", "微积分极限", "英语语法时态"];
 
@@ -25,7 +20,7 @@ export default function HomeScreen() {
       router.push(`/session/${session.id}/clarify`);
     },
     onError: () => {
-      setError("创建测试失败，请稍后重试。");
+      setError("没能创建诊断会话，请检查网络后重试。");
     }
   });
 
@@ -33,7 +28,7 @@ export default function HomeScreen() {
     const trimmedTopic = topic.trim();
 
     if (!trimmedTopic) {
-      setError("先输入一个想测试的知识点。");
+      setError("先告诉我你想验证哪部分知识。");
       return;
     }
 
@@ -42,159 +37,87 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.container}>
-        <Text style={styles.kicker}>知识自测</Text>
-        <Text style={styles.title}>输入一个主题，快速诊断掌握程度</Text>
-        <Text style={styles.subtitle}>
-          App 会先澄清范围，再生成 8-25 道选择题，最后给出薄弱点 TOP3。
-        </Text>
-
-        <View style={styles.card}>
-          <Text style={styles.label}>我想测试</Text>
-          <TextInput
-            value={topic}
-            onChangeText={setTopic}
-            placeholder="例如：Next.js App Router 缓存"
-            placeholderTextColor="#A1A1AA"
-            returnKeyType="done"
-            style={styles.input}
-          />
-
-          <View style={styles.chipRow}>
-            {suggestions.map((suggestion) => (
-              <Pressable
-                key={suggestion}
-                onPress={() => setTopic(suggestion)}
-                style={styles.chip}
-              >
-                <Text style={styles.chipText}>{suggestion}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          <Pressable
-            disabled={createSessionMutation.isPending}
-            onPress={startSession}
-            style={({ pressed }) => [
-              styles.primaryButton,
-              (pressed || createSessionMutation.isPending) && styles.buttonPressed
-            ]}
-          >
-            {createSessionMutation.isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.primaryButtonText}>开始测试</Text>
-            )}
-          </Pressable>
-        </View>
-
-        <View style={styles.notice}>
-          <Text style={styles.noticeTitle}>MVP 流程</Text>
-          <Text style={styles.noticeText}>澄清 2-5 轮 · 单选题 · 即时报告</Text>
-        </View>
+    <ScreenShell>
+      <View style={styles.hero}>
+        <Text style={styles.kicker}>AI 知识诊断</Text>
+        <Text style={styles.title}>你想验证哪部分知识？</Text>
+        <Text style={styles.subtitle}>我会先问几个澄清问题，再为你生成一套诊断测试。</Text>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.agentCard}>
+        <Text style={styles.agentLabel}>Agent</Text>
+        <Text style={styles.agentText}>可以输入一个概念、课程章节、面试主题，或任何你觉得“似懂非懂”的知识点。</Text>
+      </View>
+
+      <View style={styles.inputCard}>
+        <TextInput
+          value={topic}
+          onChangeText={setTopic}
+          placeholder="例如：Next.js App Router 缓存"
+          placeholderTextColor={colors.textSubtle}
+          returnKeyType="done"
+          style={styles.input}
+        />
+
+        <Text style={styles.suggestionTitle}>助教建议</Text>
+        <View style={styles.suggestionRow}>
+          {suggestions.map((suggestion) => (
+            <Pressable key={suggestion} onPress={() => setTopic(suggestion)} style={styles.suggestion}>
+              <Text style={styles.suggestionText}>{suggestion}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <PrimaryButton
+          label="开始诊断"
+          loading={createSessionMutation.isPending}
+          disabled={createSessionMutation.isPending}
+          onPress={startSession}
+        />
+      </View>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#F8FAFC"
+  hero: { gap: spacing.sm, paddingTop: spacing.sm },
+  kicker: { color: colors.primaryBlue, fontSize: typeScale.label, fontWeight: "900" },
+  title: { color: colors.text, fontSize: typeScale.largeTitle, fontWeight: "900", letterSpacing: -1.4, lineHeight: 40 },
+  subtitle: { color: colors.textMuted, fontSize: typeScale.body, lineHeight: 24 },
+  agentCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    gap: spacing.sm,
+    padding: spacing.lg,
+    ...shadow.card
   },
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 18
-  },
-  kicker: {
-    color: "#0066FF",
-    fontSize: 15,
-    fontWeight: "700"
-  },
-  title: {
-    color: "#111827",
-    fontSize: 34,
-    fontWeight: "800",
-    lineHeight: 42
-  },
-  subtitle: {
-    color: "#52525B",
-    fontSize: 16,
-    lineHeight: 24
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    gap: 14,
-    padding: 18,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.08,
-    shadowRadius: 16
-  },
-  label: {
-    color: "#18181B",
-    fontSize: 15,
-    fontWeight: "700"
+  agentLabel: { color: colors.agentStrong, fontSize: typeScale.caption, fontWeight: "900" },
+  agentText: { color: colors.text, fontSize: typeScale.body, fontWeight: "650" as TextStyle["fontWeight"], lineHeight: 23 },
+  inputCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    gap: spacing.md,
+    padding: spacing.lg,
+    ...shadow.card
   },
   input: {
-    backgroundColor: "#F4F4F5",
-    borderRadius: 12,
-    color: "#18181B",
-    fontSize: 16,
-    minHeight: 52,
-    paddingHorizontal: 14
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.md,
+    color: colors.text,
+    fontSize: typeScale.body,
+    minHeight: 56,
+    paddingHorizontal: spacing.md
   },
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
+  suggestionTitle: { color: colors.textMuted, fontSize: typeScale.caption, fontWeight: "900" },
+  suggestionRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  suggestion: {
+    backgroundColor: colors.agent,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
   },
-  chip: {
-    backgroundColor: "#EFF6FF",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  chipText: {
-    color: "#1D4ED8",
-    fontSize: 13,
-    fontWeight: "600"
-  },
-  error: {
-    color: "#DC2626",
-    fontSize: 14
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#0066FF",
-    borderRadius: 14,
-    minHeight: 52,
-    justifyContent: "center"
-  },
-  buttonPressed: {
-    opacity: 0.75
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 17,
-    fontWeight: "700"
-  },
-  notice: {
-    backgroundColor: "#EEF2FF",
-    borderRadius: 16,
-    padding: 16
-  },
-  noticeTitle: {
-    color: "#312E81",
-    fontSize: 15,
-    fontWeight: "700"
-  },
-  noticeText: {
-    color: "#4338CA",
-    marginTop: 4
-  }
+  suggestionText: { color: colors.primaryBlue, fontSize: typeScale.caption, fontWeight: "800" },
+  error: { color: colors.danger, fontSize: typeScale.label }
 });
