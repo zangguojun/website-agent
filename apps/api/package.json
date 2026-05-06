@@ -1,0 +1,28 @@
+{
+  "name": "@website-agent/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@website-agent/core": "workspace:*",
+    "@neondatabase/serverless": "latest",
+    "drizzle-orm": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "drizzle-kit": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
