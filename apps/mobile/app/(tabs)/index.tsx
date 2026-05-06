@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import type { TextStyle } from "react-native";
 
 import { createSession } from "../../src/api/client";
 import { PrimaryButton, ScreenShell } from "../../src/ui/components";
@@ -53,6 +52,8 @@ export default function HomeScreen() {
         <TextInput
           value={topic}
           onChangeText={setTopic}
+          accessibilityHint="输入概念、章节或面试主题后开始诊断"
+          accessibilityLabel="想验证的知识点"
           placeholder="例如：Next.js App Router 缓存"
           placeholderTextColor={colors.textSubtle}
           returnKeyType="done"
@@ -62,7 +63,13 @@ export default function HomeScreen() {
         <Text style={styles.suggestionTitle}>助教建议</Text>
         <View style={styles.suggestionRow}>
           {suggestions.map((suggestion) => (
-            <Pressable key={suggestion} onPress={() => setTopic(suggestion)} style={styles.suggestion}>
+            <Pressable
+              key={suggestion}
+              onPress={() => setTopic(suggestion)}
+              accessibilityLabel={`使用建议主题：${suggestion}`}
+              accessibilityRole="button"
+              style={styles.suggestion}
+            >
               <Text style={styles.suggestionText}>{suggestion}</Text>
             </Pressable>
           ))}
@@ -94,7 +101,7 @@ const styles = StyleSheet.create({
     ...shadow.card
   },
   agentLabel: { color: colors.agentStrong, fontSize: typeScale.caption, fontWeight: "900" },
-  agentText: { color: colors.text, fontSize: typeScale.body, fontWeight: "650" as TextStyle["fontWeight"], lineHeight: 23 },
+  agentText: { color: colors.text, fontSize: typeScale.body, fontWeight: "600", lineHeight: 23 },
   inputCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
