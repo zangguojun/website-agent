@@ -26,6 +26,8 @@ export function PrimaryButton({
 }) {
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       disabled={disabled || loading}
       onPress={onPress}
       style={({ pressed }) => [
@@ -72,7 +74,12 @@ export function ChoiceOption({
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={[styles.choice, selected && styles.choiceSelected]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={[styles.choice, selected && styles.choiceSelected]}
+    >
       <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text>
     </Pressable>
   );
