@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 const choices = ["准备面试", "系统学习", "查漏补缺"];
@@ -6,6 +7,7 @@ const choices = ["准备面试", "系统学习", "查漏补缺"];
 export default function ClarifyScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const sessionId = Array.isArray(params.id) ? params.id[0] : params.id ?? "demo";
+  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -22,16 +24,27 @@ export default function ClarifyScreen() {
         </View>
 
         <View style={styles.choiceGroup}>
-          {choices.map((choice) => (
-            <Pressable key={choice} style={styles.choice}>
-              <Text style={styles.choiceText}>{choice}</Text>
-            </Pressable>
-          ))}
+          {choices.map((choice) => {
+            const isSelected = selectedChoice === choice;
+
+            return (
+              <Pressable
+                key={choice}
+                onPress={() => setSelectedChoice(choice)}
+                style={[styles.choice, isSelected && styles.choiceSelected]}
+              >
+                <Text style={[styles.choiceText, isSelected && styles.choiceTextSelected]}>
+                  {choice}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <Pressable
+          disabled={!selectedChoice}
           onPress={() => router.push(`/session/${sessionId}/confirm`)}
-          style={styles.primaryButton}
+          style={[styles.primaryButton, !selectedChoice && styles.primaryButtonDisabled]}
         >
           <Text style={styles.primaryButtonText}>使用这些信息生成测试</Text>
         </Pressable>
@@ -93,10 +106,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16
   },
+  choiceSelected: {
+    backgroundColor: "#DBEAFE",
+    borderColor: "#0066FF"
+  },
   choiceText: {
     color: "#3730A3",
     fontSize: 16,
     fontWeight: "700"
+  },
+  choiceTextSelected: {
+    color: "#1D4ED8"
   },
   primaryButton: {
     alignItems: "center",
@@ -105,6 +125,9 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     minHeight: 52,
     justifyContent: "center"
+  },
+  primaryButtonDisabled: {
+    opacity: 0.45
   },
   primaryButtonText: {
     color: "#FFFFFF",

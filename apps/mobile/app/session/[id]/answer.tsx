@@ -4,16 +4,52 @@ import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 type Choice = "A" | "B";
 
-const options: Array<{ id: Choice; label: string }> = [
-  { id: "A", label: "Server Component 可以直接读取服务端数据源。" },
-  { id: "B", label: "Server Component 必须在浏览器里完成渲染。" }
+type Question = {
+  id: string;
+  dimension: string;
+  question: string;
+  options: Array<{ id: Choice; label: string }>;
+};
+
+const questions: [Question, ...Question[]] = [
+  {
+    id: "rsc-concept",
+    dimension: "核心概念",
+    question: "关于 React Server Components，哪一项说法更准确？",
+    options: [
+      { id: "A", label: "Server Component 可以直接读取服务端数据源。" },
+      { id: "B", label: "Server Component 必须在浏览器里完成渲染。" }
+    ]
+  },
+  {
+    id: "cache-usage",
+    dimension: "实际应用",
+    question: "如果一个页面需要读取数据库并尽快返回首屏，哪种做法更贴近 App Router 思路？",
+    options: [
+      { id: "A", label: "优先在 Server Component 中获取数据并渲染。" },
+      { id: "B", label: "把所有数据请求都放到客户端 useEffect 里。" }
+    ]
+  },
+  {
+    id: "common-misconception",
+    dimension: "常见误区",
+    question: "下面哪项更可能造成不必要的客户端 JavaScript？",
+    options: [
+      { id: "A", label: "只在需要交互的组件上使用客户端组件。" },
+      { id: "B", label: "在很高层级随意添加 use client。" }
+    ]
+  }
 ];
 
 export default function AnswerScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const sessionId = Array.isArray(params.id) ? params.id[0] : params.id ?? "demo";
-  const [selected, setSelected] = useState<Choice | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, Choice>>({});
   const [error, setError] = useState<string | null>(null);
+  const currentQuestion = questions[currentIndex] ?? questions[0];
+  const selected = answers[currentQuestion.id] ?? null;
+  const isLastQuestion = currentIndex === questions.length - 1;
 
   const submitAnswer = () => {
     if (!selected) {
@@ -22,31 +58,48 @@ export default function AnswerScreen() {
     }
 
     setError(null);
-    router.push(`/session/${sessionId}/report`);
+    if (isLastQuestion) {
+      router.push(`/session/${sessionId}/report`);
+      return;
+    }
+
+    setCurrentIndex((index) => index + 1);
   };
 
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.container}>
         <View>
-          <Text style={styles.step}>3 / 4 · 第 1 题</Text>
+          <Text style={styles.step}>
+            3 / 4 · 第 {currentIndex + 1} 题 / 共 {questions.length} 题
+          </Text>
           <View style={styles.progressTrack}>
-            <View style={styles.progressFill} />
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${((currentIndex + 1) / questions.length) * 100}%` }
+              ]}
+            />
           </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.dimension}>核心概念</Text>
-          <Text style={styles.question}>关于 React Server Components，哪一项说法更准确？</Text>
+          <Text style={styles.dimension}>{currentQuestion.dimension}</Text>
+          <Text style={styles.question}>{currentQuestion.question}</Text>
 
           <View style={styles.options}>
-            {options.map((option) => {
+            {currentQuestion.options.map((option) => {
               const isSelected = selected === option.id;
 
               return (
                 <Pressable
                   key={option.id}
-                  onPress={() => setSelected(option.id)}
+                  onPress={() =>
+                    setAnswers((currentAnswers) => ({
+                      ...currentAnswers,
+                      [currentQuestion.id]: option.id
+                    }))
+                  }
                   style={[styles.option, isSelected && styles.optionSelected]}
                 >
                   <Text style={[styles.optionKey, isSelected && styles.optionKeySelected]}>
@@ -62,7 +115,9 @@ export default function AnswerScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable onPress={submitAnswer} style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>提交并查看报告</Text>
+          <Text style={styles.primaryButtonText}>
+            {isLastQuestion ? "提交并查看报告" : "下一题"}
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -94,8 +149,7 @@ const styles = StyleSheet.create({
   progressFill: {
     backgroundColor: "#0066FF",
     borderRadius: 999,
-    height: 8,
-    width: "20%"
+    height: 8
   },
   card: {
     backgroundColor: "#FFFFFF",

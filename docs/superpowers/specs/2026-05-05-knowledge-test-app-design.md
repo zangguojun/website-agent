@@ -1,11 +1,13 @@
 # 知识自测 iOS App / 设计文档
 
-| 字段 | 值 |
-|---|---|
-| 项目代号 | `website-agent`（仓库名沿用，产品形态为 iOS App） |
+
+| 字段   | 值                                             |
+| ---- | --------------------------------------------- |
+| 项目代号 | `website-agent`（仓库名沿用，产品形态为 iOS App）          |
 | 文档作者 | Brainstorming session（Claude Opus 4.7 + 用户协作） |
-| 创建日期 | 2026-05-05 |
-| 状态 | 设计完成，待实现规划 |
+| 创建日期 | 2026-05-05                                    |
+| 状态   | 设计完成，待实现规划                                    |
+
 
 ---
 
@@ -14,17 +16,20 @@
 **一句话**：用户输入任意"想学的知识点"，App 通过对话式澄清 + AI 出题 + 即时评分，快速给出"我对这个东西掌握到什么程度"的诊断报告。
 
 **目标用户**：
+
 - 想自学新技术/新学科但不知从何下手的好奇者
 - 准备面试/考证/考研但缺乏即时反馈的学习者
 - 任何"对某个概念似懂非懂、想客观验证一下"的人
 
 **核心价值主张**：
+
 - 比"自己回忆"更客观
 - 比"做现成 quiz"更贴合自己关心的范围
 - 比"找老师"更便宜、更快
 - 5-15 分钟完成一次完整测试
 
 **产品边界（明确不做）**：
+
 - 不做"学习闭环"（不推送视频/课程/学习路径），用户自行决定后续学习路径
 - 不做社交、不做实时多人答题
 - 不做"专业证书认证"，仅供自我评估
@@ -33,26 +38,28 @@
 
 ## 2. 关键决策清单
 
-| # | 决策项 | 选择 | 备选与理由 |
-|---|---|---|---|
-| 1 | 平台 | Expo iOS（短期），Android / Web 移动端待定 | 用户技术栈偏好；React Native Reusables 让跨端复用顺畅 |
-| 2 | 技术栈 | Expo + React Native Reusables + NativeWind v4 | shadcn for RN，design system 一致性 |
-| 3 | 后端 | Next.js on Vercel + Vercel Functions (Fluid Compute) | 部署体验、AI Gateway、SSE 流式优势 |
-| 4 | 数据库 | Neon Postgres (Vercel Marketplace) + Drizzle ORM | 类型安全、迁移友好、Serverless |
-| 5 | 缓存/限流 | Upstash Redis (Vercel Marketplace) + `@upstash/ratelimit` | 同生态、KV 价格低 |
-| 6 | Auth | Clerk + Device-ID claim 模式 | Vercel Marketplace first-party；MVP 阶段 TCO 最优 |
-| 7 | 知识来源 | 用户自由输入主题，LLM 实时生成 | 最大灵活度，无需建知识库 |
-| 8 | 题型 | 纯选择题（单选/多选/判断），机械判分 | 体验顺滑、零延迟评分、零成本 |
-| 9 | 题量 | LLM 决定 8-25 题（按主题广度自适应） | 智能但有上限 |
-| 10 | 报告形式 | 维度雷达图 + 错题解析 + 薄弱点 TOP3 | 信息密度合适 |
-| 11 | 商业模式 | 免费版 3 次/日 + Pro 月/年订阅（¥18/月，¥168/年）+ 题包 IAP | 阶段递进 |
-| 12 | LLM | 多供应商可切，默认 DeepSeek-V3，调用走 AI Gateway | 成本可控 + 质量可控 |
-| 13 | Agent 框架 | Mastra + Vercel AI SDK | 同生态、官方模板、社区案例齐全 |
-| 14 | 编排策略 | 受控 Agent（Pipeline 式），4 个 Mastra Workflow | 可预测、可调试、有 SLA |
-| 15 | 用户数据隔离 | 应用层 3 层防御（TS 类型 + AsyncLocalStorage 软 RLS + 集成测试） | MVP 阶段 RLS 投产比不划算 |
-| 16 | 本地化 | 中文 MVP，i18n 架构预留 | 后续按市场加 |
-| 17 | 匿名 → 登录 | 匿名优先，登录后 `/api/auth/claim` 合并 device-id 数据 | 降低首次门槛 |
-| 18 | 流式 UX | 全部 LLM 调用走 SSE，App 端 `react-native-sse` | 感知延迟最优 |
+
+| #   | 决策项      | 选择                                                        | 备选与理由                                        |
+| --- | -------- | --------------------------------------------------------- | -------------------------------------------- |
+| 1   | 平台       | Expo iOS（短期），Android / Web 移动端待定                          | 用户技术栈偏好；React Native Reusables 让跨端复用顺畅       |
+| 2   | 技术栈      | Expo + React Native Reusables + NativeWind v4             | shadcn for RN，design system 一致性              |
+| 3   | 后端       | Next.js on Vercel + Vercel Functions (Fluid Compute)      | 部署体验、AI Gateway、SSE 流式优势                     |
+| 4   | 数据库      | Neon Postgres (Vercel Marketplace) + Drizzle ORM          | 类型安全、迁移友好、Serverless                         |
+| 5   | 缓存/限流    | Upstash Redis (Vercel Marketplace) + `@upstash/ratelimit` | 同生态、KV 价格低                                   |
+| 6   | Auth     | Clerk + Device-ID claim 模式                                | Vercel Marketplace first-party；MVP 阶段 TCO 最优 |
+| 7   | 知识来源     | 用户自由输入主题，LLM 实时生成                                         | 最大灵活度，无需建知识库                                 |
+| 8   | 题型       | 纯选择题（单选/多选/判断），机械判分                                       | 体验顺滑、零延迟评分、零成本                               |
+| 9   | 题量       | LLM 决定 8-25 题（按主题广度自适应）                                   | 智能但有上限                                       |
+| 10  | 报告形式     | 维度雷达图 + 错题解析 + 薄弱点 TOP3                                   | 信息密度合适                                       |
+| 11  | 商业模式     | 免费版 3 次/日 + Pro 月/年订阅（¥18/月，¥168/年）+ 题包 IAP               | 阶段递进                                         |
+| 12  | LLM      | 多供应商可切，默认 DeepSeek-V3，调用走 AI Gateway                      | 成本可控 + 质量可控                                  |
+| 13  | Agent 框架 | Mastra + Vercel AI SDK                                    | 同生态、官方模板、社区案例齐全                              |
+| 14  | 编排策略     | 受控 Agent（Pipeline 式），4 个 Mastra Workflow                  | 可预测、可调试、有 SLA                                |
+| 15  | 用户数据隔离   | 应用层 3 层防御（TS 类型 + AsyncLocalStorage 软 RLS + 集成测试）         | MVP 阶段 RLS 投产比不划算                            |
+| 16  | 本地化      | 中文 MVP，i18n 架构预留                                          | 后续按市场加                                       |
+| 17  | 匿名 → 登录  | 匿名优先，登录后 `/api/auth/claim` 合并 device-id 数据                | 降低首次门槛                                       |
+| 18  | 流式 UX    | 全部 LLM 调用走 SSE，App 端 `react-native-sse`                   | 感知延迟最优                                       |
+
 
 ---
 
@@ -98,21 +105,23 @@
 
 ### 3.2 关键 API 端点
 
-| 方法 | 路径 | 说明 | 流式 |
-|---|---|---|---|
-| POST | `/api/sessions` | 创建会话（输入 topic） | 否 |
-| POST | `/api/sessions/:id/clarify` | 触发澄清 Agent，获取下一题或完成信号 | SSE |
-| POST | `/api/sessions/:id/answer-clarify` | 提交澄清问题答案 | 否 |
-| POST | `/api/sessions/:id/start-test` | 启动出题 Agent | SSE（plan + 逐题流出） |
-| POST | `/api/sessions/:id/answers` | 提交单题作答 | 否 |
-| POST | `/api/sessions/:id/finalize` | 触发评分 + 报告 | SSE（报告流式生成） |
-| GET | `/api/sessions/:id` | 拉取会话详情（用于恢复） | 否 |
-| GET | `/api/sessions/:id/report` | 拉取已生成报告 | 否 |
-| POST | `/api/auth/claim` | 登录后绑定 device-id 数据 | 否 |
-| GET | `/api/me/sessions` | 我的历史 | 否 |
-| POST | `/api/billing/iap/verify` | 验证 Apple IAP 凭据 | 否 |
-| POST | `/api/billing/iap/notification` | Apple Server-to-Server 通知 | 否 |
-| GET | `/share/:token` | 公开报告页（HTML，含 OG image） | 否 |
+
+| 方法   | 路径                                 | 说明                        | 流式               |
+| ---- | ---------------------------------- | ------------------------- | ---------------- |
+| POST | `/api/sessions`                    | 创建会话（输入 topic）            | 否                |
+| POST | `/api/sessions/:id/clarify`        | 触发澄清 Agent，获取下一题或完成信号     | SSE              |
+| POST | `/api/sessions/:id/answer-clarify` | 提交澄清问题答案                  | 否                |
+| POST | `/api/sessions/:id/start-test`     | 启动出题 Agent                | SSE（plan + 逐题流出） |
+| POST | `/api/sessions/:id/answers`        | 提交单题作答                    | 否                |
+| POST | `/api/sessions/:id/finalize`       | 触发评分 + 报告                 | SSE（报告流式生成）      |
+| GET  | `/api/sessions/:id`                | 拉取会话详情（用于恢复）              | 否                |
+| GET  | `/api/sessions/:id/report`         | 拉取已生成报告                   | 否                |
+| POST | `/api/auth/claim`                  | 登录后绑定 device-id 数据        | 否                |
+| GET  | `/api/me/sessions`                 | 我的历史                      | 否                |
+| POST | `/api/billing/iap/verify`          | 验证 Apple IAP 凭据           | 否                |
+| POST | `/api/billing/iap/notification`    | Apple Server-to-Server 通知 | 否                |
+| GET  | `/share/:token`                    | 公开报告页（HTML，含 OG image）    | 否                |
+
 
 ### 3.3 owner_id 抽象（统一身份层）
 
@@ -139,45 +148,53 @@ DB 中所有用户数据用 `owner_id text` 字段，业务代码完全不区分
 
 ### 4.1 单次测试成本（DeepSeek-V3 默认）
 
-| 阶段 | Token | 成本 |
-|---|---|---|
-| 澄清流水线（5 轮） | ~10K | ¥0.04 |
-| PLAN（出题规划） | ~1K | ¥0.001 |
-| GENERATE（5 维度并行） | ~15K | ¥0.015 |
-| VALIDATE（批量校验） | ~2K | ¥0.002 |
-| ENRICH（错题解析，假设 5 题） | ~5K | ¥0.005 |
-| REPORT（报告自然语言） | ~2K | ¥0.002 |
-| **合计** | **~35K** | **~¥0.06 / 次** |
+
+| 阶段                  | Token    | 成本             |
+| ------------------- | -------- | -------------- |
+| 澄清流水线（5 轮）          | ~10K     | ¥0.04          |
+| PLAN（出题规划）          | ~1K      | ¥0.001         |
+| GENERATE（5 维度并行）    | ~15K     | ¥0.015         |
+| VALIDATE（批量校验）      | ~2K      | ¥0.002         |
+| ENRICH（错题解析，假设 5 题） | ~5K      | ¥0.005         |
+| REPORT（报告自然语言）      | ~2K      | ¥0.002         |
+| **合计**              | **~35K** | **~¥0.06 / 次** |
+
 
 ### 4.2 商业策略三阶段
 
 **阶段 1：验证期（0-1K MAU，全免费）**
+
 - 全功能开放，限 3 次/日
 - 目标：验证留存、PMF、收集"被反复测的主题"指导后续做精品题包
 - 月成本估算：1K MAU × 30 次 × ¥0.06 = **¥1,800/月**（含 Vercel/Neon/Upstash/Clerk/LLM）
 
 **阶段 2：变现期（1K-10K MAU）**
 
-| 层级 | 价格 | 内容 |
-|---|---|---|
-| Free | ¥0 | 3 次/日，历史只存 30 天，DeepSeek 模型 |
+
+| 层级     | 价格                   | 内容                                |
+| ------ | -------------------- | --------------------------------- |
+| Free   | ¥0                   | 3 次/日，历史只存 30 天，DeepSeek 模型       |
 | Pro 月订 | ¥18/月（国内）/ $2.99（海外） | 不限次数，永久历史，可选 GPT-4o/Claude，PDF 导出 |
-| Pro 年订 | ¥168/年 / $24.99 | 同上，省 ¥48 |
-| 题包 IAP | ¥6 – ¥30 一次性 | 精品场景：AWS 认证、考研政治、TOEFL 词根等 |
+| Pro 年订 | ¥168/年 / $24.99      | 同上，省 ¥48                          |
+| 题包 IAP | ¥6 – ¥30 一次性         | 精品场景：AWS 认证、考研政治、TOEFL 词根等        |
+
 
 **阶段 3：放大期（10K+ MAU）**
+
 - Pro+ 层级：BYOK 解锁顶级模型 + 团队共享报告
 - B2B：教育机构企业版 + SSO
 - API 开放给其他 EdTech
 
 ### 4.3 成本对冲
 
-| 风险 | 对冲 |
-|---|---|
-| LLM 涨价 | AI Gateway 多 provider 路由 |
+
+| 风险           | 对冲                                        |
+| ------------ | ----------------------------------------- |
+| LLM 涨价       | AI Gateway 多 provider 路由                  |
 | Apple 30% 抽成 | Apple Small Business Program 降至 15%；引导年订阅 |
-| 用户刷免费额度 | Device-ID + Clerk 多账号检测；可疑行为降级到 1 次/日 |
-| LLM 输出质量波动 | 报告页"反馈"按钮收集差评样本持续迭代 prompt |
+| 用户刷免费额度      | Device-ID + Clerk 多账号检测；可疑行为降级到 1 次/日     |
+| LLM 输出质量波动   | 报告页"反馈"按钮收集差评样本持续迭代 prompt                |
+
 
 ---
 
@@ -187,23 +204,27 @@ DB 中所有用户数据用 `owner_id text` 字段，业务代码完全不区分
 
 我们用**受控 Agent**（Pipeline 式），不用自主 Agent。
 
-| 维度 | 受控（采用） | 自主（未采用） |
-|---|---|---|
-| 决策权 | 步骤顺序代码定 | LLM 自决 |
-| 可预测性 | 高 | 低 |
-| 调试难度 | 低 | 高 |
-| 适合 | 业务流程清晰 + SLA | 探索性任务 |
+
+| 维度   | 受控（采用）       | 自主（未采用） |
+| ---- | ------------ | ------- |
+| 决策权  | 步骤顺序代码定      | LLM 自决  |
+| 可预测性 | 高            | 低       |
+| 调试难度 | 低            | 高       |
+| 适合   | 业务流程清晰 + SLA | 探索性任务   |
+
 
 **编排框架**：Mastra（基于 Vercel AI SDK），用 Workflow + Step + Evals。
 
 ### 5.2 4 个 Workflow 总览
 
-| # | Workflow | 触发时机 | 步骤数 | 总延迟 | 总成本 |
-|---|---|---|---|---|---|
-| 0 | Topic Validate | 用户提交主题 | 1 | <1s | ¥0.001 |
-| 1 | Clarification | 每次澄清回合 | 4 | 3-5s | ¥0.008 |
-| 2 | Question Generation | 澄清完成进入答题前 | 5（含并行） | 流式首题 <3s，全完成 ~10s | ¥0.018 |
-| 3 | Report Generation | 答完提交 | 2（ENRICH + REPORT） | 8-15s | ¥0.007 |
+
+| #   | Workflow            | 触发时机      | 步骤数                | 总延迟               | 总成本    |
+| --- | ------------------- | --------- | ------------------ | ----------------- | ------ |
+| 0   | Topic Validate      | 用户提交主题    | 1                  | <1s               | ¥0.001 |
+| 1   | Clarification       | 每次澄清回合    | 4                  | 3-5s              | ¥0.008 |
+| 2   | Question Generation | 澄清完成进入答题前 | 5（含并行）             | 流式首题 <3s，全完成 ~10s | ¥0.018 |
+| 3   | Report Generation   | 答完提交      | 2（ENRICH + REPORT） | 8-15s             | ¥0.007 |
+
 
 ### 5.3 Workflow 1 / Clarification（4 步流水线）
 
@@ -251,11 +272,12 @@ DB 中所有用户数据用 `owner_id text` 字段，业务代码完全不区分
 ```
 
 **澄清信息分类（LLM 自适应判断哪些必问、哪些可选）**：
+
 - 必问（A/C/E）：缩小范围 / 明确目的 / 关键概念对齐
 - 可选（B/D）：探听背景 / 领域概览（LLM 视主题特点决定）
 
-**单回合成本**：~¥0.008
-**最多 5 回合**：~¥0.04 上限
+**单回合成本**：~~¥0.008
+**最多 5 回合**：~~¥0.04 上限
 
 ### 5.4 Workflow 2 / Question Generation（5 步含并行）
 
@@ -555,6 +577,7 @@ topic_pack_purchases (
 ### 6.3 用户隔离 / 3 层防御（替代 RLS）
 
 **Layer 1：TypeScript 编译期强制**
+
 ```ts
 type OwnerId = `device:${string}` | `clerk:${string}`;
 export async function getMySessions(ownerId: OwnerId, limit = 20) { ... }
@@ -562,6 +585,7 @@ export async function getMySessions(ownerId: OwnerId, limit = 20) { ... }
 ```
 
 **Layer 2：AsyncLocalStorage 软 RLS**
+
 ```ts
 const requestContext = new AsyncLocalStorage<{ ownerId: OwnerId }>();
 
@@ -580,6 +604,7 @@ export function currentOwnerId(): OwnerId {
 ```
 
 **Layer 3：集成测试强制**
+
 - 每个 repo 函数有"user A 读不到 user B 数据"的测试
 - CI 强制覆盖率 100%
 
@@ -619,18 +644,20 @@ apps/api/src/db/
 
 ### 7.1 设计系统
 
-| 维度 | 选择 |
-|---|---|
-| 基础组件 | React Native Reusables（Button, Card, Input, Dialog, Sheet, RadioGroup, Checkbox, Progress, Toast 全用） |
-| 样式 | NativeWind v4 |
-| 色板（明） | 主色 `#0066FF`；强调 `#FF6B35`；中性 zinc 系；正确绿 `#10B981`；错误红 `#EF4444` |
-| 色板（暗） | 主色 `#3B82F6`；背景 `#0A0A0A`；卡片 `#171717` |
-| 字体 | 中文 PingFang SC（系统）/ 英文 Inter |
-| 圆角 | 卡片 16px，按钮 12px，输入 10px |
-| 动效 | Reanimated 3 + Moti（spring）；按钮 haptic（expo-haptics） |
-| 图表 | victory-native v40（雷达图） |
-| 键盘 | react-native-keyboard-controller |
-| 图标 | Lucide React Native |
+
+| 维度    | 选择                                                                                                   |
+| ----- | ---------------------------------------------------------------------------------------------------- |
+| 基础组件  | React Native Reusables（Button, Card, Input, Dialog, Sheet, RadioGroup, Checkbox, Progress, Toast 全用） |
+| 样式    | NativeWind v4                                                                                        |
+| 色板（明） | 主色 `#0066FF`；强调 `#FF6B35`；中性 zinc 系；正确绿 `#10B981`；错误红 `#EF4444`                                      |
+| 色板（暗） | 主色 `#3B82F6`；背景 `#0A0A0A`；卡片 `#171717`                                                               |
+| 字体    | 中文 PingFang SC（系统）/ 英文 Inter                                                                         |
+| 圆角    | 卡片 16px，按钮 12px，输入 10px                                                                              |
+| 动效    | Reanimated 3 + Moti（spring）；按钮 haptic（expo-haptics）                                                  |
+| 图表    | victory-native v40（雷达图）                                                                              |
+| 键盘    | react-native-keyboard-controller                                                                     |
+| 图标    | Lucide React Native                                                                                  |
+
 
 ### 7.2 路由结构（Expo Router）
 
@@ -670,34 +697,36 @@ app/
 
 ### 7.3 屏幕清单
 
-| # | 屏幕 | 路径 | 阶段 |
-|---|---|---|---|
-| 1 | Onboarding 3 屏 | `(onboarding)/...` | MVP |
-| 2 | 首页（Topic Input） | `(tabs)/index` | MVP |
-| 3 | 历史（含空状态） | `(tabs)/history` | MVP |
-| 4 | 设置 | `(tabs)/settings` | MVP |
-| 5 | 澄清对话 | `session/[id]/clarify` | MVP |
-| 6 | 测试预览/确认 | `session/[id]/confirm` | MVP |
-| 7 | 出题 Loading | `session/[id]/loading` | MVP |
-| 8 | 答题（单题） | `session/[id]/answer` | MVP |
-| 9 | 题目准备中 | inline state | MVP |
-| 10 | 报告 | `session/[id]/report` | MVP |
-| 11 | 公开分享页 | `share/[token]`（Web） | MVP |
-| 12 | 登录 Sheet | `(modals)/sign-in` | MVP |
-| 13 | 升级 Pro Paywall | `pricing` 或 modal | 阶段 2 |
-| 14 | 配额耗尽 Modal | inline modal | MVP（先显示"明天再来"） |
-| 15 | 订阅成功 | inline | 阶段 2 |
-| 16 | 错误页（统一模板） | error boundary | MVP |
-| 17 | 网络断开提示 | inline banner | MVP |
-| 18 | 会话过期 | inline modal | MVP |
-| 19 | 继续测试提示 | 首页 banner | MVP |
-| 20 | 管理订阅 | `settings/subscription` | 阶段 2 |
-| 21 | 导出数据 | `settings/export` | 隐私合规必须 |
-| 22 | 主题/字号 | `settings/appearance` | MVP |
-| 23 | LLM 选择 | `settings/llm` | 阶段 2 |
-| 24 | 帮助/反馈 | `settings/help` | MVP（先 mailto） |
-| 25 | 题包商店 | `packs/index` | 阶段 2 |
-| 26 | 题包详情 | `packs/[id]` | 阶段 2 |
+
+| #   | 屏幕              | 路径                      | 阶段             |
+| --- | --------------- | ----------------------- | -------------- |
+| 1   | Onboarding 3 屏  | `(onboarding)/...`      | MVP            |
+| 2   | 首页（Topic Input） | `(tabs)/index`          | MVP            |
+| 3   | 历史（含空状态）        | `(tabs)/history`        | MVP            |
+| 4   | 设置              | `(tabs)/settings`       | MVP            |
+| 5   | 澄清对话            | `session/[id]/clarify`  | MVP            |
+| 6   | 测试预览/确认         | `session/[id]/confirm`  | MVP            |
+| 7   | 出题 Loading      | `session/[id]/loading`  | MVP            |
+| 8   | 答题（单题）          | `session/[id]/answer`   | MVP            |
+| 9   | 题目准备中           | inline state            | MVP            |
+| 10  | 报告              | `session/[id]/report`   | MVP            |
+| 11  | 公开分享页           | `share/[token]`（Web）    | MVP            |
+| 12  | 登录 Sheet        | `(modals)/sign-in`      | MVP            |
+| 13  | 升级 Pro Paywall  | `pricing` 或 modal       | 阶段 2           |
+| 14  | 配额耗尽 Modal      | inline modal            | MVP（先显示"明天再来"） |
+| 15  | 订阅成功            | inline                  | 阶段 2           |
+| 16  | 错误页（统一模板）       | error boundary          | MVP            |
+| 17  | 网络断开提示          | inline banner           | MVP            |
+| 18  | 会话过期            | inline modal            | MVP            |
+| 19  | 继续测试提示          | 首页 banner               | MVP            |
+| 20  | 管理订阅            | `settings/subscription` | 阶段 2           |
+| 21  | 导出数据            | `settings/export`       | 隐私合规必须         |
+| 22  | 主题/字号           | `settings/appearance`   | MVP            |
+| 23  | LLM 选择          | `settings/llm`          | 阶段 2           |
+| 24  | 帮助/反馈           | `settings/help`         | MVP（先 mailto）  |
+| 25  | 题包商店            | `packs/index`           | 阶段 2           |
+| 26  | 题包详情            | `packs/[id]`            | 阶段 2           |
+
 
 **MVP 必做**：1-12, 14, 16-19, 21, 22, 24（共 17 屏）
 **阶段 2 增加**：13, 15, 20, 23, 25, 26
@@ -714,16 +743,18 @@ app/
 
 ### 7.5 关键自定义组件
 
-| 组件 | 来源 | 用途 |
-|---|---|---|
-| `<TopicInput>` | 自建 | 首页主输入框 + 推荐 chip |
-| `<ChatBubble>` | 自建 + RNR Card | 澄清对话气泡 |
-| `<QuestionCard>` | 自建 | 答题选项卡 |
-| `<RadarChart>` | victory-native | 报告维度图 |
-| `<ScoreBadge>` | 自建 | 大分数 + 等级标签 |
-| `<UpgradeSheet>` | RNR Sheet + 自建 | 升级 Pro 弹窗 |
-| `<ErrorToast>` | RNR Toast | 全局错误提示 |
-| `<StreamingText>` | 自建 | 流式文本打字效果 |
+
+| 组件                | 来源             | 用途               |
+| ----------------- | -------------- | ---------------- |
+| `<TopicInput>`    | 自建             | 首页主输入框 + 推荐 chip |
+| `<ChatBubble>`    | 自建 + RNR Card  | 澄清对话气泡           |
+| `<QuestionCard>`  | 自建             | 答题选项卡            |
+| `<RadarChart>`    | victory-native | 报告维度图            |
+| `<ScoreBadge>`    | 自建             | 大分数 + 等级标签       |
+| `<UpgradeSheet>`  | RNR Sheet + 自建 | 升级 Pro 弹窗        |
+| `<ErrorToast>`    | RNR Toast      | 全局错误提示           |
+| `<StreamingText>` | 自建             | 流式文本打字效果         |
+
 
 ---
 
@@ -731,28 +762,31 @@ app/
 
 ### 8.1 错误分类与策略
 
-| 类别 | 场景 | 用户感知 | 策略 |
-|---|---|---|---|
-| LLM 调用失败 | 超时 / 5xx | 不感知 | AI Gateway failover；3 次失败 → fallback |
-| LLM 输出异常 | JSON / Zod 校验失败 | 不感知 | 同 step 重试 1 次；再失败 → fallback prompt |
-| 澄清死循环 | Agent 不收敛 | 不感知 | 5 轮硬上限 |
-| 出题质量差 | Validate 拒绝 | 略增 1-2 秒 | 该题重生成；3 次失败 → 该 dimension 减题或兜底库 |
-| 总生成全失败 | 5 dimension 全挂 | 看到错误 | 通用 5 题题包兜底 + 标记降级 |
-| SSE 断 | 网络抖动 | 加载暂停 | 自动重连 + Last-Event-ID 续推 |
-| App 杀进程 | 切换 App | 重开恢复 | 状态在 DB；首页"继续上次测试" |
-| 会话过期 | 24h 未完成 | 看到提示 | "测试已过期"按钮"开始新测试" |
-| 答题快过生成 | 用户手快 | 短暂 loading | 最多等 5 秒；超时插占位题或提前结束 |
-| 限流耗尽 | Free 用户用完 | 看到弹窗 | "明天再来 / 升级 Pro / 看视频" |
-| 支付异常 | Apple IAP 取消/退款 | 自动降级 | Apple Server Notification → tier 改回 free |
-| Clerk 验证失败 | JWT 过期 | 自动续 | clerk-expo 自动 refresh；连续失败 → 引导重登 |
-| Device-ID 丢失 | App 数据被清 | 历史丢失 | 接受现实；提示"登录可永久保存" |
-| LLM 输出有害内容 | 政治/不当 | 不感知 | Validate step 加内容审查；命中重生成 |
-| 用户输入垃圾 | "asdfasdf" | 友好提示 | Topic 预校验拒绝 + 给好例子 |
-| 同主题反复刷 | 用户行为 | 不感知 | 24h 内同 owner_id 同 topic 复用题库 |
+
+| 类别           | 场景              | 用户感知       | 策略                                       |
+| ------------ | --------------- | ---------- | ---------------------------------------- |
+| LLM 调用失败     | 超时 / 5xx        | 不感知        | AI Gateway failover；3 次失败 → fallback     |
+| LLM 输出异常     | JSON / Zod 校验失败 | 不感知        | 同 step 重试 1 次；再失败 → fallback prompt      |
+| 澄清死循环        | Agent 不收敛       | 不感知        | 5 轮硬上限                                   |
+| 出题质量差        | Validate 拒绝     | 略增 1-2 秒   | 该题重生成；3 次失败 → 该 dimension 减题或兜底库         |
+| 总生成全失败       | 5 dimension 全挂  | 看到错误       | 通用 5 题题包兜底 + 标记降级                        |
+| SSE 断        | 网络抖动            | 加载暂停       | 自动重连 + Last-Event-ID 续推                  |
+| App 杀进程      | 切换 App          | 重开恢复       | 状态在 DB；首页"继续上次测试"                        |
+| 会话过期         | 24h 未完成         | 看到提示       | "测试已过期"按钮"开始新测试"                         |
+| 答题快过生成       | 用户手快            | 短暂 loading | 最多等 5 秒；超时插占位题或提前结束                      |
+| 限流耗尽         | Free 用户用完       | 看到弹窗       | "明天再来 / 升级 Pro / 看视频"                    |
+| 支付异常         | Apple IAP 取消/退款 | 自动降级       | Apple Server Notification → tier 改回 free |
+| Clerk 验证失败   | JWT 过期          | 自动续        | clerk-expo 自动 refresh；连续失败 → 引导重登        |
+| Device-ID 丢失 | App 数据被清        | 历史丢失       | 接受现实；提示"登录可永久保存"                         |
+| LLM 输出有害内容   | 政治/不当           | 不感知        | Validate step 加内容审查；命中重生成                |
+| 用户输入垃圾       | "asdfasdf"      | 友好提示       | Topic 预校验拒绝 + 给好例子                       |
+| 同主题反复刷       | 用户行为            | 不感知        | 24h 内同 owner_id 同 topic 复用题库             |
+
 
 ### 8.2 客户端统一错误展示
 
 3 类抽象：
+
 1. **可重试型**（网络/瞬时 5xx）→ 全屏插画 + 「重试」+ 「联系客服」
 2. **可降级型**（LLM 全挂、限流耗尽）→ 局部提示条 + 替代操作
 3. **致命型**（账号被封等）→ 模态框引导
@@ -761,14 +795,16 @@ app/
 
 ### 8.3 监控告警
 
-| 指标 | 阈值 | 渠道 |
-|---|---|---|
-| LLM 失败率 | > 5% / 5min | Sentry → Slack |
-| 单次会话成本 | > ¥0.5 | Vercel AI Gateway 告警 |
-| 流式中断率 | > 10% / 1h | Sentry |
-| 报告 NPS | < 3.5 / 周均 | 周报邮件 |
-| Free 用户人均 LLM 成本 | > ¥1 / 月 | 月度 Review |
-| Neon 连接池占用 | > 80% | Vercel monitoring |
+
+| 指标               | 阈值          | 渠道                   |
+| ---------------- | ----------- | -------------------- |
+| LLM 失败率          | > 5% / 5min | Sentry → Slack       |
+| 单次会话成本           | > ¥0.5      | Vercel AI Gateway 告警 |
+| 流式中断率            | > 10% / 1h  | Sentry               |
+| 报告 NPS           | < 3.5 / 周均  | 周报邮件                 |
+| Free 用户人均 LLM 成本 | > ¥1 / 月    | 月度 Review            |
+| Neon 连接池占用       | > 80%       | Vercel monitoring    |
+
 
 ---
 
@@ -814,11 +850,13 @@ apps/api/src/mastra/evals/
 ```
 
 3 种评估方式：
+
 1. **基于规则**（自动）：澄清问题数 ≤ 5、出题数 8-25、选项数 2-6、题目语义相似度 < 0.85
 2. **LLM-as-Judge**（自动 + 抽样人工）：用 GPT-4/Claude 评判 DeepSeek 输出，1-5 分；人工复核 10%
 3. **人工评**（每周 20 个）：团队成员实测打分
 
 CI 集成：
+
 - 每 PR 跑金标子集（10 题，<2 分钟）
 - 每夜跑全量（50 题，约 15 分钟），结果发 Slack
 - 任何 prompt 改动必须 attach eval 对比报告
@@ -826,6 +864,7 @@ CI 集成：
 ### 9.5 E2E 测试（Maestro）
 
 5-10 条核心路径：
+
 1. 首次安装 → 输入主题 → 完成澄清 → 完成测试 → 看报告
 2. 中途退出 → 重开 → 继续上次
 3. 用完免费额度 → 看到升级弹窗
@@ -853,30 +892,36 @@ CI 集成：
 
 ### 10.1 直接对标项目（学习架构）
 
-| 项目 | 学什么 |
-|---|---|
-| [GenCertQuiz](https://github.com/jishen027/GenCertQuiz) | 4-Agent 流水线（Researcher/Style Analyzer/Psychometrician/Critic）的 prompt 设计 |
-| [QuizAI / agentic-quiz-generator](https://github.com/alfaarizi/agentic-quiz-generator) | 自主 Agent + 多语言 + 学习档案 |
-| [Adaptive Knowledge Graph](https://github.com/MysterionRise/adaptive-knowledge-graph) | 生产级 KG-RAG + IRT/BKT 掌握度模型（Phase 2 升级参考） |
-| [PersonalExam](https://github.com/sribdcn/PersonalExam) | 中文场景 BKT + 知识点细粒度跟踪 |
-| [Quazar](https://github.com/zop-hacks/quazar) | 多 Agent 拆分思路 |
+
+| 项目                                                                                     | 学什么                                                                      |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [GenCertQuiz](https://github.com/jishen027/GenCertQuiz)                                | 4-Agent 流水线（Researcher/Style Analyzer/Psychometrician/Critic）的 prompt 设计 |
+| [QuizAI / agentic-quiz-generator](https://github.com/alfaarizi/agentic-quiz-generator) | 自主 Agent + 多语言 + 学习档案                                                    |
+| [Adaptive Knowledge Graph](https://github.com/MysterionRise/adaptive-knowledge-graph)  | 生产级 KG-RAG + IRT/BKT 掌握度模型（Phase 2 升级参考）                                 |
+| [PersonalExam](https://github.com/sribdcn/PersonalExam)                                | 中文场景 BKT + 知识点细粒度跟踪                                                      |
+| [Quazar](https://github.com/zop-hacks/quazar)                                          | 多 Agent 拆分思路                                                             |
+
 
 ### 10.2 评估学理论（Phase 2 自适应升级）
 
-| 项目 | 学什么 |
-|---|---|
-| [ATLAS](https://github.com/Peiyu-Georgia-Li/ATLAS) | IRT + CAT 公式实现 |
-| [LLM-Adaptive Quiz Biology](https://github.com/Sujitha1221/LLM-Based-Adaptive-Quiz-Platform-for-A-L-Biology) | IRT + RAG + FAISS 完整代码 |
-| [KAQG](https://github.com/mfshiu/kaqg) | 多 Agent + KG + 教育测量学严谨度 |
+
+| 项目                                                                                                           | 学什么                     |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| [ATLAS](https://github.com/Peiyu-Georgia-Li/ATLAS)                                                           | IRT + CAT 公式实现          |
+| [LLM-Adaptive Quiz Biology](https://github.com/Sujitha1221/LLM-Based-Adaptive-Quiz-Platform-for-A-L-Biology) | IRT + RAG + FAISS 完整代码  |
+| [KAQG](https://github.com/mfshiu/kaqg)                                                                       | 多 Agent + KG + 教育测量学严谨度 |
+
 
 ### 10.3 Mobile + Mastra 工程参考
 
-| 项目 | 学什么 |
-|---|---|
-| [Linguamate AI Tutor](https://github.com/Shards-inc/Linguamate-ai-tutor) | Production Expo App 工程结构、导航/同步策略 |
-| [OliverMengich/ai-tutor](https://github.com/OliverMengich/ai-tutor) | Mastra + Expo + RAG + workflow + evals 完整范例 |
-| [Mastra `template-pdf-questions`](https://github.com/mastra-ai/template-pdf-questions) | Mastra workflow + agent 官方写法 |
-| [Expo AI Kit](https://github.com/laraelmas/expo-ai-kit) | 端侧推理（未来"离线题包"功能可借鉴） |
+
+| 项目                                                                                     | 学什么                                         |
+| -------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [Linguamate AI Tutor](https://github.com/Shards-inc/Linguamate-ai-tutor)               | Production Expo App 工程结构、导航/同步策略            |
+| [OliverMengich/ai-tutor](https://github.com/OliverMengich/ai-tutor)                    | Mastra + Expo + RAG + workflow + evals 完整范例 |
+| [Mastra `template-pdf-questions](https://github.com/mastra-ai/template-pdf-questions)` | Mastra workflow + agent 官方写法                |
+| [Expo AI Kit](https://github.com/laraelmas/expo-ai-kit)                                | 端侧推理（未来"离线题包"功能可借鉴）                         |
+
 
 ### 10.4 不 fork 的理由
 
@@ -972,12 +1017,15 @@ CI 集成：
 
 ## 附录 A：术语表
 
-| 术语 | 定义 |
-|---|---|
-| owner_id | 统一用户标识，格式为 `device:<uuid>` 或 `clerk:<userId>` |
-| dimension | 雷达图的一个轴，对应主题的一个子点 |
-| Workflow | Mastra 的工作流（一组有序 Step 的编排） |
-| Step | Workflow 的最小单元，纯函数 + Zod schema 输入输出 |
-| Mastery Label | 掌握度等级标签（初学/入门/熟练/精通） |
-| Tier | 用户付费层级（free / pro / pro_plus） |
-| Claim | 匿名用户登录后将 device-id 名下数据迁移到 clerk-id 的过程 |
+
+| 术语            | 定义                                            |
+| ------------- | --------------------------------------------- |
+| owner_id      | 统一用户标识，格式为 `device:<uuid>` 或 `clerk:<userId>` |
+| dimension     | 雷达图的一个轴，对应主题的一个子点                             |
+| Workflow      | Mastra 的工作流（一组有序 Step 的编排）                    |
+| Step          | Workflow 的最小单元，纯函数 + Zod schema 输入输出          |
+| Mastery Label | 掌握度等级标签（初学/入门/熟练/精通）                          |
+| Tier          | 用户付费层级（free / pro / pro_plus）                 |
+| Claim         | 匿名用户登录后将 device-id 名下数据迁移到 clerk-id 的过程       |
+
+
