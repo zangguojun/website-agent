@@ -26,6 +26,7 @@ export function PrimaryButton({
 }) {
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       disabled={disabled || loading}
