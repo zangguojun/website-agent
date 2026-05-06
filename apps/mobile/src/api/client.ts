@@ -7,16 +7,6 @@ export type Session = {
   topic: string;
 };
 
-function createLocalSession(topic: string): Session {
-  const randomUUID = globalThis.crypto?.randomUUID;
-  const id =
-    typeof randomUUID === "function"
-      ? randomUUID.call(globalThis.crypto)
-      : `local-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
-
-  return { id, topic };
-}
-
 function normalizeSession(payload: unknown, topic: string): Session {
   if (
     payload &&
@@ -39,29 +29,25 @@ function normalizeSession(payload: unknown, topic: string): Session {
     return { id: payload.session.id, topic };
   }
 
-  return createLocalSession(topic);
+  throw new Error("Session response is missing session.id");
 }
 
 export async function createSession(topic: string): Promise<Session> {
   const deviceId = await getDeviceId();
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/sessions`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-device-id": deviceId
-      },
-      body: JSON.stringify({ topic })
-    });
+  const response = await fetch(`${API_BASE_URL}/api/sessions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-device-id": deviceId
+    },
+    body: JSON.stringify({ topic })
+  });
 
-    if (!response.ok) {
-      return createLocalSession(topic);
-    }
-
-    const payload: unknown = await response.json();
-    return normalizeSession(payload, topic);
-  } catch {
-    return createLocalSession(topic);
+  if (!response.ok) {
+    throw new Error(`Failed to create session: ${response.status}`);
   }
+
+  const payload: unknown = await response.json();
+  return normalizeSession(payload, topic);
 }

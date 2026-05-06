@@ -25,7 +25,7 @@ export default function HomeScreen() {
       router.push(`/session/${session.id}/clarify`);
     },
     onError: () => {
-      setError("暂时无法创建测试，请稍后重试。");
+      setError("创建测试失败，请稍后重试。");
     }
   });
 
