@@ -1,0 +1,17 @@
+appId: com.websiteagent.knowledgetest
+---
+- launchApp
+- assertVisible: "学一个新东西？"
+- tapOn: "如「React Hooks」"
+- inputText: "React Hooks"
+- tapOn: "开始测试"
+- assertVisible: "你想测试这个主题的哪一部分？"
+- tapOn: "整体掌握程度"
+- tapOn: "确认"
+- assertVisible: "准备开始测试"
+- tapOn: "开始测试"
+- assertVisible: "关于 React Hooks"
+- tapOn: "A. Hooks 只能在函数组件或自定义 Hook 中调用"
+- tapOn: "查看报告"
+- assertVisible: "你的测试报告"
+- assertVisible: "78"
