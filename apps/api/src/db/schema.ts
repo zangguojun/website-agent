@@ -15,7 +15,7 @@ export const sessions = pgTable('sessions', {
 
 export const questions = pgTable('questions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull(),
+  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   dimensionId: text('dimension_id').notNull(),
   idx: integer('idx').notNull(),
   type: text('type').notNull(),
@@ -29,15 +29,15 @@ export const questions = pgTable('questions', {
 
 export const answers = pgTable('answers', {
   id: uuid('id').primaryKey().defaultRandom(),
-  questionId: uuid('question_id').notNull(),
-  sessionId: uuid('session_id').notNull(),
+  questionId: uuid('question_id').notNull().references(() => questions.id, { onDelete: 'cascade' }),
+  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   userAnswer: jsonb('user_answer').notNull(),
   isCorrect: boolean('is_correct').notNull(),
 });
 
 export const reports = pgTable('reports', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull(),
+  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   ownerId: text('owner_id').notNull(),
   overallScore: integer('overall_score').notNull(),
   masteryLabel: text('mastery_label').notNull(),
