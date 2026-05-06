@@ -1,6 +1,6 @@
 import { getDeviceId } from "../auth/device-id";
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
 export type Session = {
   id: string;
