@@ -1,173 +1,77 @@
 import { router } from "expo-router";
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-const weaknesses = [
-  "边界条件判断：缓存失效和重新验证时机",
-  "实际应用：服务端与客户端组件拆分",
-  "常见误区：把渲染位置和交互能力混为一谈"
-];
+import { mockQuestions } from "../../../src/session/mock-session";
+import { buildReport } from "../../../src/session/session-flow";
+import { MetricBar, PrimaryButton, ReportScoreCard, ScreenShell, WeaknessCard } from "../../../src/ui/components";
+import { colors, radius, shadow, spacing, typeScale } from "../../../src/ui/theme";
 
-const dimensions = [
-  { name: "核心概念", score: 86 },
-  { name: "实际应用", score: 72 },
-  { name: "边界条件", score: 61 }
-];
+const report = buildReport(mockQuestions, [
+  { questionId: "rsc-concept", optionId: "A" },
+  { questionId: "cache-usage", optionId: "B" },
+  { questionId: "common-misconception", optionId: "B" }
+]);
 
 export default function ReportScreen() {
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.container}>
-        <Text style={styles.step}>4 / 4</Text>
-        <View style={styles.scoreCard}>
-          <Text style={styles.score}>78</Text>
-          <Text style={styles.mastery}>熟练</Text>
-          <Text style={styles.summary}>
-            你已经掌握主要概念，下一步建议针对边界条件和真实场景拆分做查漏补缺。
-          </Text>
+    <ScreenShell>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.kicker}>诊断报告</Text>
+          <Text style={styles.title}>这次测试说明了什么</Text>
+        </View>
+
+        <ReportScoreCard score={report.score} mastery={report.mastery} summary={report.summary} />
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>为什么这样评估</Text>
+          <Text style={styles.cardText}>{report.rationale}</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>维度概览</Text>
-          {dimensions.map((dimension) => (
-            <View key={dimension.name} style={styles.dimensionRow}>
-              <Text style={styles.dimensionName}>{dimension.name}</Text>
-              <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${dimension.score}%` }]} />
-              </View>
-              <Text style={styles.dimensionScore}>{dimension.score}</Text>
-            </View>
+          {report.metrics.map((metric) => (
+            <MetricBar key={metric.dimensionId} name={metric.name} score={metric.score} />
           ))}
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>薄弱点 TOP3</Text>
-          {weaknesses.map((weakness, index) => (
-            <View key={weakness} style={styles.weaknessRow}>
-              <Text style={styles.weaknessIndex}>{index + 1}</Text>
-              <Text style={styles.weaknessText}>{weakness}</Text>
+          <Text style={styles.cardTitle}>薄弱点</Text>
+          {report.weaknesses.map((weakness, index) => (
+            <WeaknessCard key={weakness} weakness={weakness} index={index} />
+          ))}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>错题解释</Text>
+          {report.explanations.map((item) => (
+            <View key={item.questionId} style={styles.explanationCard}>
+              <Text style={styles.explanationTitle}>{item.title}</Text>
+              <Text style={styles.cardText}>{item.explanation}</Text>
             </View>
           ))}
         </View>
 
-        <Pressable onPress={() => router.replace("/(tabs)")} style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>回到首页</Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+        <PrimaryButton label="回到首页" onPress={() => router.replace("/(tabs)")} />
+      </ScrollView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#F8FAFC"
-  },
-  container: {
-    flex: 1,
-    gap: 14,
-    padding: 24
-  },
-  step: {
-    color: "#0066FF",
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  scoreCard: {
-    alignItems: "center",
-    backgroundColor: "#0F172A",
-    borderRadius: 24,
-    padding: 24
-  },
-  score: {
-    color: "#FFFFFF",
-    fontSize: 72,
-    fontWeight: "900"
-  },
-  mastery: {
-    backgroundColor: "#10B981",
-    borderRadius: 999,
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 14,
-    paddingVertical: 8
-  },
-  summary: {
-    color: "#CBD5E1",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 14,
-    textAlign: "center"
-  },
+  content: { gap: spacing.lg, paddingBottom: spacing.xxl },
+  header: { gap: spacing.sm },
+  kicker: { color: colors.primaryBlue, fontSize: typeScale.label, fontWeight: "900" },
+  title: { color: colors.text, fontSize: 30, fontWeight: "900", letterSpacing: -1, lineHeight: 36 },
   card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    gap: 12,
-    padding: 18
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    gap: spacing.md,
+    padding: spacing.lg,
+    ...shadow.card
   },
-  cardTitle: {
-    color: "#18181B",
-    fontSize: 18,
-    fontWeight: "800"
-  },
-  dimensionRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10
-  },
-  dimensionName: {
-    color: "#3F3F46",
-    fontWeight: "700",
-    width: 72
-  },
-  barTrack: {
-    backgroundColor: "#E4E4E7",
-    borderRadius: 999,
-    flex: 1,
-    height: 8,
-    overflow: "hidden"
-  },
-  barFill: {
-    backgroundColor: "#0066FF",
-    borderRadius: 999,
-    height: 8
-  },
-  dimensionScore: {
-    color: "#18181B",
-    fontWeight: "800",
-    width: 32
-  },
-  weaknessRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10
-  },
-  weaknessIndex: {
-    backgroundColor: "#FEF3C7",
-    borderRadius: 999,
-    color: "#92400E",
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 9,
-    paddingVertical: 5
-  },
-  weaknessText: {
-    color: "#27272A",
-    flex: 1,
-    fontSize: 15,
-    lineHeight: 21
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#0066FF",
-    borderRadius: 14,
-    minHeight: 52,
-    justifyContent: "center"
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "800"
-  }
+  cardTitle: { color: colors.text, fontSize: typeScale.title, fontWeight: "900" },
+  cardText: { color: colors.textMuted, fontSize: typeScale.label, lineHeight: 21 },
+  explanationCard: { backgroundColor: colors.surfaceMuted, borderRadius: radius.md, gap: spacing.xs, padding: spacing.md },
+  explanationTitle: { color: colors.text, fontSize: typeScale.label, fontWeight: "900" }
 });
