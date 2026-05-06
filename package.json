@@ -1,0 +1,1 @@
+{"name":"website-agent","private":true,"packageManager":"pnpm@9.15.4","scripts":{"dev":"turbo dev","build":"turbo build","typecheck":"turbo typecheck","test":"turbo test","lint":"turbo lint"},"devDependencies":{"turbo":"latest","typescript":"latest"}}
