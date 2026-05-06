@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Knowledge Test",
+    "slug": "knowledge-test",
+    "scheme": "knowledgetest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["ios"],
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.websiteagent.knowledgetest",
+      "supportsTablet": false
+    },
+    "plugins": ["expo-router", "expo-secure-store"]
+  }
+}
