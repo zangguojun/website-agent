@@ -50,6 +50,8 @@ export default function HomeScreen() {
 
       <View style={styles.inputCard}>
         <TextInput
+          accessibilityHint="输入后会开始一段澄清对话，生成诊断测试。"
+          accessibilityLabel="想验证的知识主题"
           value={topic}
           onChangeText={setTopic}
           placeholder="例如：Next.js App Router 缓存"
@@ -61,7 +63,13 @@ export default function HomeScreen() {
         <Text style={styles.suggestionTitle}>助教建议</Text>
         <View style={styles.suggestionRow}>
           {suggestions.map((suggestion) => (
-            <Pressable key={suggestion} onPress={() => setTopic(suggestion)} style={styles.suggestion}>
+            <Pressable
+              key={suggestion}
+              accessibilityLabel={`选择建议主题：${suggestion}`}
+              accessibilityRole="button"
+              onPress={() => setTopic(suggestion)}
+              style={styles.suggestion}
+            >
               <Text style={styles.suggestionText}>{suggestion}</Text>
             </Pressable>
           ))}
