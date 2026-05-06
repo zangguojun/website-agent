@@ -16,13 +16,13 @@
 pnpm install
 ```
 
-配置移动端 API 地址：
+配置移动端 API 地址（**真机 / 局域网调试时建议使用电脑局域网 IP**，例如 `http://192.168.1.10:3000`；勿在真机上仅用 `localhost`，那会指向手机本身）：
 
 ```bash
 export EXPO_PUBLIC_API_BASE_URL="http://localhost:3000"
 ```
 
-移动端启动时必须设置 `EXPO_PUBLIC_API_BASE_URL`。缺少该环境变量时，App 会直接抛错，避免请求落到错误地址。
+开发模式下若未设置 `EXPO_PUBLIC_API_BASE_URL`，会尝试根据 Metro / dev client 的 `hostUri` 自动拼出 `http://<同一主机>:3000`；生产构建**必须**设置该变量。
 
 启动 API：
 

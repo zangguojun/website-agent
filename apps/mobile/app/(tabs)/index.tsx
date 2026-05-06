@@ -18,8 +18,13 @@ export default function HomeScreen() {
     onSuccess: (session) => {
       router.push(`/session/${session.id}/clarify`);
     },
-    onError: () => {
-      setError("没能创建诊断会话，请检查网络后重试。");
+    onError: (err) => {
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(
+        __DEV__
+          ? `没能创建诊断会话。\n${detail}`
+          : "没能创建诊断会话，请检查网络后重试。"
+      );
     }
   });
 

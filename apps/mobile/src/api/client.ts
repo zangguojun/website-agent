@@ -1,14 +1,5 @@
 import { getDeviceId } from "../auth/device-id";
-
-function getApiBaseUrl() {
-  const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
-
-  if (!apiBaseUrl) {
-    throw new Error("Missing EXPO_PUBLIC_API_BASE_URL");
-  }
-
-  return apiBaseUrl;
-}
+import { resolveApiBaseUrl } from "./base-url";
 
 export type Session = {
   id: string;
@@ -41,20 +32,37 @@ function normalizeSession(payload: unknown, topic: string): Session {
 }
 
 export async function createSession(topic: string): Promise<Session> {
-  const deviceId = await getDeviceId();
-  const apiBaseUrl = getApiBaseUrl();
+  let apiBaseUrl: string;
 
-  const response = await fetch(`${apiBaseUrl}/api/sessions`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-device-id": deviceId
-    },
-    body: JSON.stringify({ topic })
-  });
+  try {
+    apiBaseUrl = resolveApiBaseUrl();
+  } catch (error) {
+    throw error instanceof Error ? error : new Error(String(error));
+  }
+
+  const deviceId = await getDeviceId();
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${apiBaseUrl}/api/sessions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-device-id": deviceId
+      },
+      body: JSON.stringify({ topic })
+    });
+  } catch (error) {
+    const cause = error instanceof Error ? error.message : String(error);
+    throw new Error(`无法连接 API（${apiBaseUrl}）。${cause}`);
+  }
 
   if (!response.ok) {
-    throw new Error(`Failed to create session: ${response.status}`);
+    const body = await response.text();
+    throw new Error(
+      `服务器返回错误（${response.status}）${body ? `：${body.slice(0, 240)}` : "。请确认 API 已启动且 DATABASE 等依赖正常。"}`
+    );
   }
 
   const payload: unknown = await response.json();
