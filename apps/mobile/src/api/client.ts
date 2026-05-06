@@ -1,6 +1,14 @@
 import { getDeviceId } from "../auth/device-id";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
+function getApiBaseUrl() {
+  const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+  if (!apiBaseUrl) {
+    throw new Error("Missing EXPO_PUBLIC_API_BASE_URL");
+  }
+
+  return apiBaseUrl;
+}
 
 export type Session = {
   id: string;
@@ -34,8 +42,9 @@ function normalizeSession(payload: unknown, topic: string): Session {
 
 export async function createSession(topic: string): Promise<Session> {
   const deviceId = await getDeviceId();
+  const apiBaseUrl = getApiBaseUrl();
 
-  const response = await fetch(`${API_BASE_URL}/api/sessions`, {
+  const response = await fetch(`${apiBaseUrl}/api/sessions`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
