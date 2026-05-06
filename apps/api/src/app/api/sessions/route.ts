@@ -15,13 +15,13 @@ export async function POST(request: Request) {
   try {
     const ownerId = ownerIdFromHeaders(request.headers);
     const body = await request.json().catch(() => ({}));
-    const rawTopic = typeof body.rawTopic === 'string' ? body.rawTopic.trim() : '';
+    const topic = typeof body.topic === 'string' ? body.topic.trim() : '';
 
-    if (!rawTopic) {
-      return Response.json({ error: 'rawTopic is required' }, { status: 400 });
+    if (!topic) {
+      return Response.json({ error: 'topic is required' }, { status: 400 });
     }
 
-    const session = await createSession({ ownerId, rawTopic });
+    const session = await createSession({ ownerId, rawTopic: topic });
     return Response.json({ session }, { status: 201 });
   } catch (error) {
     return ownerErrorResponse(error);
