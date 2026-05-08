@@ -10,22 +10,31 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <StatusBar barStyle="dark-content" />
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* `title` 用于子页面左上角返回旁显示简短上一屏标题（如「首页」），避免裸露的路由段名“(tabs)” */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: "首页" }} />
         <Stack.Screen
           name="session/[id]/clarify"
-          options={{ title: "澄清范围", presentation: "card" }}
+          options={{
+            headerBackTitle: "首页",
+            title: "澄清范围",
+            presentation: "card"
+          }}
         />
         <Stack.Screen
           name="session/[id]/confirm"
-          options={{ title: "测试预览" }}
+          options={{ headerBackTitle: "澄清", title: "测试预览" }}
+        />
+        <Stack.Screen
+          name="session/[id]/generate"
+          options={{ headerBackTitle: "预览", title: "生成测试中" }}
         />
         <Stack.Screen
           name="session/[id]/answer"
-          options={{ title: "开始答题" }}
+          options={{ headerBackTitle: "生成", title: "开始答题" }}
         />
         <Stack.Screen
           name="session/[id]/report"
-          options={{ title: "诊断报告" }}
+          options={{ headerBackTitle: "答题", title: "诊断报告" }}
         />
       </Stack>
     </QueryClientProvider>

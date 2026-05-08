@@ -1,6 +1,15 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import { answerClarificationTurn, getNextUnansweredTurn } from "../../../src/session/session-flow";
 import { mockClarificationTurns } from "../../../src/session/mock-session";
@@ -13,8 +22,19 @@ export default function ClarifyScreen() {
   const sessionId = Array.isArray(params.id) ? params.id[0] : params.id ?? "demo";
   const [turns, setTurns] = useState<ClarificationTurn[]>(mockClarificationTurns);
   const [freeText, setFreeText] = useState("");
+  const scrollRef = useRef<ScrollView>(null);
   const nextTurn = useMemo(() => getNextUnansweredTurn(turns), [turns]);
   const visibleTurns = turns.filter((turn) => turn.answer || turn.question.id === nextTurn?.question.id);
+
+  const scrollChatToBottom = () => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    });
+  };
+
+  useEffect(() => {
+    scrollChatToBottom();
+  }, [turns, nextTurn?.question.id]);
 
   const answerCurrentTurn = (value: string | string[], label: string) => {
     if (!nextTurn) return;
@@ -37,8 +57,11 @@ export default function ClarifyScreen() {
         </View>
 
         <ScrollView
+          ref={scrollRef}
+          style={styles.chatScroll}
           contentContainerStyle={styles.chatContent}
           keyboardShouldPersistTaps="handled"
+          onContentSizeChange={scrollChatToBottom}
           showsVerticalScrollIndicator={false}
         >
           {visibleTurns.map((turn) => (
@@ -88,7 +111,23 @@ export default function ClarifyScreen() {
         ) : (
           <View style={styles.answerArea}>
             <PrimaryButton label="查看测试计划" onPress={goToPlan} />
-            <PrimaryButton label="继续澄清" variant="secondary" onPress={() => setTurns(mockClarificationTurns)} />
+            <PrimaryButton
+              label="重新澄清"
+              variant="secondary"
+              onPress={() => {
+                Alert.alert("重新澄清", "将清空已填写的澄清回答，并从第一题重新开始。", [
+                  { text: "取消", style: "cancel" },
+                  {
+                    text: "确定",
+                    style: "destructive",
+                    onPress: () => {
+                      setTurns(mockClarificationTurns);
+                      setFreeText("");
+                    }
+                  }
+                ]);
+              }}
+            />
           </View>
         )}
       </KeyboardAvoidingView>
@@ -98,6 +137,7 @@ export default function ClarifyScreen() {
 
 const styles = StyleSheet.create({
   keyboardAvoider: { flex: 1, gap: spacing.lg },
+  chatScroll: { flex: 1 },
   header: { gap: spacing.sm },
   kicker: { color: colors.primaryBlue, fontSize: typeScale.label, fontWeight: "900" },
   title: { color: colors.text, fontSize: 30, fontWeight: "900", letterSpacing: -1, lineHeight: 36 },
