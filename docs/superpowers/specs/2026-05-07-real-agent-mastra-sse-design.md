@@ -4,7 +4,7 @@
 | --- | --- |
 | 项目 | Knowledge Test — Expo iOS App + `@website-agent/api` |
 | 日期 | 2026-05-07 |
-| 状态 | 设计已定稿（待实现计划） |
+| 状态 | spec 已定稿；§6.1.1 为实现计划补充之上行契约 |
 | 触发 | 替换当前澄清 / 计划 / 出题 / 报告链路的 mock；第一期全链路接真 Mastra |
 
 ## 1. 目标与非目标
@@ -115,6 +115,17 @@
   - **机械判分**；逻辑在 `@website-agent/core`，与 LLM 解耦。
 
 （会话列表、Redis 限流等延续现有产品决策，本 spec 不重复展开。）
+
+### 6.1.1 补充：用户消息上行（澄清等）
+
+为支持「用户气泡先落库，Agent 回复走 SSE」的双工流程，增加：
+
+- **`POST /api/sessions/:id/messages`**  
+  - Body：`{ phase: 'clarify' | 'plan' | 'questions' | 'report', role: 'user', content: string, payload?: object }`（首期至少 `clarify` + `role: user`）。  
+  - 行为：校验 **`ownerId`、会话归属与阶段门禁**；写入 **`session_messages`**；返回 `{ message }`。  
+  - 客户端：`POST` 成功后，再 **`GET` 当前阶段对应 SSE**（如 `.../stream/clarify`）接收模型流式输出。
+
+与 §5 持久化及 §6.2 分阶段 SSE 策略一致。
 
 ### 6.2 SSE（分阶段，做法 1）
 
