@@ -1,5 +1,7 @@
 # Dynamic Agent iOS UI Implementation Plan
 
+> **实现状态（2026-05-06 起持续更新）：** 原计划 Task 1–6 中的类型、主题、页面与 mock 主流程已在代码库落地，并额外接入了 API 快照恢复、报告 SSE 合并、答题/报告 deep link 补强等。本文档中的 `- [ ]` 复选框主要为历史分步记录；以 `git` 与 `apps/mobile` 源码为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Upgrade the Expo iOS MVP from static demo screens into a dynamic, transparent Agent-driven diagnostic session UI.
@@ -475,9 +477,9 @@ git commit -m "test: add dynamic session flow model"
 **Files:**
 - Create: `apps/mobile/src/ui/theme.ts`
 - Create: `apps/mobile/src/ui/components.tsx`
-- Test: `apps/mobile/src/session/session-flow.test.ts`
+- Test: `apps/mobile/src/session/session-flow.test.ts`（流程）与 `apps/mobile/src/ui/theme.test.ts`（设计令牌快照）
 
-- [ ] **Step 1: Create design tokens**
+- [x] **Step 1: Create design tokens**
 
 Create `apps/mobile/src/ui/theme.ts`:
 
@@ -536,9 +538,11 @@ export const shadow = {
 } as const;
 ```
 
-- [ ] **Step 2: Create shared components**
+- [x] **Step 2: Create shared components**
 
 Create `apps/mobile/src/ui/components.tsx`. Implement these exports in one focused file for the current small MVP:
+
+> **注：** `GenerationStepList` 已实现计划原文，并扩展可选 props `failedAtIndex`（生成失败步骤标红），不改变默认用法。
 
 ```tsx
 import type { ReactNode } from "react";
@@ -833,7 +837,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 3: Run verification**
+- [x] **Step 3: Run verification**
 
 Run:
 
@@ -844,12 +848,9 @@ pnpm --filter @website-agent/mobile test
 
 Expected: both PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
-```bash
-git add apps/mobile/src/ui
-git commit -m "feat: add native calm ui primitives"
-```
+（由开发者在仓库中执行；预期提交信息：`feat: add native calm ui primitives`。）
 
 ---
 
@@ -859,7 +860,9 @@ git commit -m "feat: add native calm ui primitives"
 - Modify: `apps/mobile/app/(tabs)/index.tsx`
 - Use: `apps/mobile/src/ui/components.tsx`
 
-- [ ] **Step 1: Redesign home screen**
+> **注：** 已实现计划布局，并扩展：顶部日程提示条、`retestTopic` 深链回填、失败时次级按钮「重试」、无障碍属性与开发态错误明细。
+
+- [x] **Step 1: Redesign home screen**
 
 Replace current Home layout with:
 
@@ -988,7 +991,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run:
 
@@ -998,12 +1001,9 @@ pnpm --filter @website-agent/mobile typecheck
 
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
-```bash
-git add "apps/mobile/app/(tabs)/index.tsx"
-git commit -m "feat: redesign home as agent entry"
-```
+（由开发者在仓库中执行：`git commit -m "feat: redesign home as agent entry"`）
 
 ---
 
@@ -1015,7 +1015,9 @@ git commit -m "feat: redesign home as agent entry"
 - Use: `apps/mobile/src/session/*`
 - Use: `apps/mobile/src/ui/*`
 
-- [ ] **Step 1: Replace clarify page with dynamic chat shell**
+> **注：** 澄清/预览已实现 API 回填、SSE 与 mock 分支；本节勾选表示与计划语义对齐（compact 主题抬头、离线「继续澄清」、计划副本与重试）。
+
+- [x] **Step 1: Replace clarify page with dynamic chat shell**
 
 Implement `apps/mobile/app/session/[id]/clarify.tsx` with:
 
@@ -1129,7 +1131,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Replace confirm page with plan card**
+- [x] **Step 2: Replace confirm page with plan card**
 
 Implement `apps/mobile/app/session/[id]/confirm.tsx` with:
 
@@ -1172,7 +1174,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run:
 
@@ -1183,12 +1185,9 @@ pnpm --filter @website-agent/mobile test
 
 Expected: both PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
-```bash
-git add "apps/mobile/app/session/[id]/clarify.tsx" "apps/mobile/app/session/[id]/confirm.tsx"
-git commit -m "feat: add dynamic clarification plan flow"
-```
+（由开发者在仓库中执行：`git commit -m "feat: add dynamic clarification plan flow"`）
 
 ---
 
@@ -1197,7 +1196,9 @@ git commit -m "feat: add dynamic clarification plan flow"
 **Files:**
 - Create: `apps/mobile/app/session/[id]/generate.tsx`
 
-- [ ] **Step 1: Create generation screen**
+> **注：** 已实现定时步骤推进（mock）、`useQuery`+`loadQuestionsFromQuestionsStream`（live）、相位守卫、失败步骤 `failedAtIndex`、重试时重置进度；本节勾选表示与 Task 5 语义及透明生成 UX 对齐。
+
+- [x] **Step 1: Create generation screen**
 
 Create `apps/mobile/app/session/[id]/generate.tsx`:
 
@@ -1252,7 +1253,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run:
 
@@ -1262,12 +1263,9 @@ pnpm --filter @website-agent/mobile typecheck
 
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
-```bash
-git add "apps/mobile/app/session/[id]/generate.tsx"
-git commit -m "feat: add transparent generation screen"
-```
+（由开发者在仓库中执行：`git commit -m "feat: add transparent generation screen"`）
 
 ---
 
@@ -1277,7 +1275,9 @@ git commit -m "feat: add transparent generation screen"
 - Modify: `apps/mobile/app/session/[id]/answer.tsx`
 - Modify: `apps/mobile/app/session/[id]/report.tsx`
 
-- [ ] **Step 1: Replace answer page with generated mock questions**
+> **注：** 答题页已支持 mock、`useQuery` 拉题、快照恢复答案与直接进入报告跳转；报告页含 mock 演示数据、快照恢复、`advance`、报告 SSE `mergeReportWithAgentSse`、`重新测试相近主题` 等。与计划字面稿的差异以本节「完成」口径为准。
+
+- [x] **Step 1: Replace answer page with generated mock questions**
 
 Implement `apps/mobile/app/session/[id]/answer.tsx` using `mockQuestions`, `answerQuestion`, and `QuestionCard`. Preserve one-question-per-screen and route to report after the last question.
 
@@ -1314,7 +1314,7 @@ setCurrentIndex((index) => index + 1);
 
 Use `QuestionCard` for the question body and `PrimaryButton` for the bottom CTA.
 
-- [ ] **Step 2: Replace report page with diagnostic report layout**
+- [x] **Step 2: Replace report page with diagnostic report layout**
 
 Implement `apps/mobile/app/session/[id]/report.tsx` with deterministic `buildReport(mockQuestions, answers)` fallback. Because answer state is not persisted across routes yet, use a representative mock answer set:
 
@@ -1335,7 +1335,7 @@ Render:
 - wrong-answer explanation cards
 - primary CTA `回到首页`
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run:
 
@@ -1346,12 +1346,9 @@ pnpm --filter @website-agent/mobile test
 
 Expected: both PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
-```bash
-git add "apps/mobile/app/session/[id]/answer.tsx" "apps/mobile/app/session/[id]/report.tsx"
-git commit -m "feat: add dynamic answer and report ui"
-```
+（由开发者在仓库中执行：`git commit -m "feat: add dynamic answer and report ui"`）
 
 ---
 
@@ -1361,7 +1358,9 @@ git commit -m "feat: add dynamic answer and report ui"
 - Modify: `apps/mobile/e2e/first-test-flow.yaml`
 - Verify: mobile typecheck, mobile tests, Expo dependency check
 
-- [ ] **Step 1: Update Maestro smoke flow**
+> **注：** `first-test-flow.yaml` 已与计划内步骤等价（仅存文件头 MOCK 提示注释）；需在 `EXPO_PUBLIC_MOCK_AGENT=true` 跑 Maestro。
+
+- [x] **Step 1: Update Maestro smoke flow**
 
 Replace `apps/mobile/e2e/first-test-flow.yaml` with:
 
@@ -1401,7 +1400,7 @@ appId: com.websiteagent.knowledgetest
 - assertVisible: "薄弱点"
 ```
 
-- [ ] **Step 2: Run final verification commands**
+- [x] **Step 2: Run final verification commands**
 
 Run:
 
@@ -1418,6 +1417,8 @@ Expected:
 - Expo dependency check prints `Dependencies are up to date`.
 
 - [ ] **Step 3: Manual dev-client verification**
+
+（须在真机/dev-client 上手跑：计划内 IP 仅为示例，请替换为你的局域网地址。）
 
 Start or reuse the current services:
 
@@ -1442,10 +1443,7 @@ Verify:
 
 - [ ] **Step 4: Commit**
 
-```bash
-git add apps/mobile/e2e/first-test-flow.yaml
-git commit -m "test: update dynamic agent smoke flow"
-```
+（由开发者在 YAML 确有改动时提交：`git commit -m "test: update dynamic agent smoke flow"`）
 
 ---
 

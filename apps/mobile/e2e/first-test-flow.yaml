@@ -1,5 +1,6 @@
 appId: com.websiteagent.knowledgetest
 ---
+# Smoke：需局域网/本机 API；澄清为服务端 3 轮脚本，与 mock 环境变量无关。
 - launchApp
 - assertVisible: "你想验证哪部分知识？"
 - tapOn: "例如：Next.js App Router 缓存"
@@ -13,7 +14,7 @@ appId: com.websiteagent.knowledgetest
 - assertVisible: "有没有你特别想测或特别不想测的范围？"
 - inputText: "重点测试 Server 和 Client Component 的边界"
 - tapOn: "提交回答"
-- assertVisible: "信息足够了"
+- assertVisible: "已完成 3 轮澄清"
 - tapOn: "查看测试计划"
 - assertVisible: "我准备这样测试你"
 - tapOn: "开始生成测试"

@@ -1,4 +1,4 @@
-import { getDeviceId } from "../auth/device-id";
+import { getAuthHeaders } from "./auth-headers";
 import { resolveApiBaseUrl } from "./base-url";
 
 export type Session = {
@@ -40,18 +40,17 @@ export async function createSession(topic: string): Promise<Session> {
     throw error instanceof Error ? error : new Error(String(error));
   }
 
-  const deviceId = await getDeviceId();
+  const headers = await getAuthHeaders({
+    "content-type": "application/json",
+  });
 
   let response: Response;
 
   try {
     response = await fetch(`${apiBaseUrl}/api/sessions`, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-device-id": deviceId
-      },
-      body: JSON.stringify({ topic })
+      headers,
+      body: JSON.stringify({ topic }),
     });
   } catch (error) {
     const cause = error instanceof Error ? error.message : String(error);

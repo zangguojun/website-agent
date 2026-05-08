@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "latest",
+    "@website-agent/core": "workspace:*",
     "expo": "55.0.23",
     "expo-constants": "55.0.16",
     "expo-dev-client": "55.0.32",

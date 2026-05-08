@@ -43,6 +43,41 @@ pnpm typecheck
 pnpm test
 ```
 
+## API 环境与数据库
+
+- `DATABASE_URL`：Neon / Postgres。未设置时在本地为**内存存储**（仅限开发/测试）。
+- `CLERK_SECRET_KEY`：需要登录态 `Authorization: Bearer` 时配置；不设则仅匿名 `x-device-id`。
+- Drizzle 迁移（在 `apps/api` 目录语义下执行，且需已导出 `DATABASE_URL`）：
+
+```bash
+pnpm --filter @website-agent/api db:generate
+pnpm --filter @website-agent/api db:migrate
+```
+
+### 分段 SSE（Node）
+
+- `GET /api/sessions/:id/stream/clarify | plan | questions | report`
+
+澄清在仅跑完 SSE 后仍停留在 `workflow_phase: clarify`；用户需 `POST /api/sessions/:id/messages` 写入至少一条用户气泡，再：
+
+`POST /api/sessions/:id/workflow/advance`，body：`{"target":"plan"}`，进入计划阶段。
+
+### POST 澄清消息示例
+
+```json
+{
+  "phase": "clarify",
+  "role": "user",
+  "content": "先测基础",
+  "payload": { "source": "mobile" }
+}
+```
+
+## 移动端
+
+- **默认**：澄清 / 确认屏走真实 REST + SSE（需 API 可达）。
+- **离线 mock UI**：`EXPO_PUBLIC_MOCK_AGENT=true`。
+
 ## 当前 MVP 纵切
 
-当前版本使用确定性的 mock Agent workflows。目标是先验证产品流程与接口契约，再接入真实 Vercel AI Gateway 和 Mastra 模型调用。
+API 仍为确定性 mock workflow（非 `@mastra/core`），但端到端可走通：会话、澄清 SSE、advance、计划 SSE、出题与报告 SSE。后续接入 Mastra / 真模型见 `docs/superpowers/plans/2026-05-07-real-agent-mastra-sse-implementation.md`。

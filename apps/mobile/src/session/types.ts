@@ -64,6 +64,15 @@ export type ReportMetric = {
   score: number;
 };
 
+export type ReportAgentSseSlice = {
+  overallScore?: number;
+  masteryLabel?: string;
+  headline?: string;
+  summary?: string;
+  weaknessLines?: string[];
+  nextSteps?: string[];
+};
+
 export type ReportData = {
   score: number;
   mastery: "需要补基础" | "接近掌握" | "熟练" | "精通";

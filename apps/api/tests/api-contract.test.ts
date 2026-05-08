@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { POST as createSession } from '../src/app/api/sessions/route';
-import { resetInMemorySessions } from '../src/db/repositories/sessions.repo';
+import { resetApiMemoryStores } from '../src/db/repositories/memory-reset';
 import { encodeSse } from '../src/sse/encode';
 
 describe('SSE contract', () => {
@@ -13,7 +13,7 @@ describe('SSE contract', () => {
 
 describe('session create contract', () => {
   it('accepts topic and stores it as rawTopic', async () => {
-    resetInMemorySessions();
+    resetApiMemoryStores();
 
     const response = await createSession(
       new Request('http://localhost/api/sessions', {

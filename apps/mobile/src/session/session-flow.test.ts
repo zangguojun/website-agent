@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { answerClarificationTurn, answerQuestion, buildReport, getNextUnansweredTurn } from "./session-flow";
+import { answerClarificationTurn, answerQuestion, buildReport, getNextUnansweredTurn, mapServerMasteryLabel, mergeReportWithAgentSse } from "./session-flow";
 import { mockClarificationTurns, mockQuestions } from "./mock-session";
 
 describe("dynamic session flow", () => {
@@ -42,5 +42,34 @@ describe("dynamic session flow", () => {
     expect(report.metrics).toHaveLength(3);
     expect(report.weaknesses[0]).toContain("实际应用");
     expect(report.explanations).toHaveLength(1);
+  });
+
+  it("maps core mastery labels to report card vocabulary", () => {
+    expect(mapServerMasteryLabel("精通")).toBe("精通");
+    expect(mapServerMasteryLabel("熟练")).toBe("熟练");
+    expect(mapServerMasteryLabel("入门")).toBe("接近掌握");
+    expect(mapServerMasteryLabel("初学")).toBe("需要补基础");
+  });
+
+  it("merges server report SSE slices over local scores", () => {
+    const local = buildReport(mockQuestions, [
+      { questionId: "rsc-concept", optionId: "A" },
+      { questionId: "cache-usage", optionId: "B" },
+      { questionId: "common-misconception", optionId: "B" },
+    ]);
+    const merged = mergeReportWithAgentSse(local, {
+      overallScore: 12,
+      masteryLabel: "初学",
+      headline: "Agent 提要",
+      summary: "SSE 概要",
+      weaknessLines: ["某维度：薄弱"],
+      nextSteps: ["先做练习 A", "复习概念 B"],
+    });
+    expect(merged.score).toBe(12);
+    expect(merged.mastery).toBe("需要补基础");
+    expect(merged.summary).toContain("SSE 概要");
+    expect(merged.summary).toContain("下一步建议");
+    expect(merged.rationale.startsWith("Agent 提要")).toBe(true);
+    expect(merged.weaknesses).toEqual(["某维度：薄弱"]);
   });
 });

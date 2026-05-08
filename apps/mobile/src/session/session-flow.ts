@@ -1,4 +1,4 @@
-import type { AnswerRecord, ClarificationTurn, GeneratedQuestion, ReportData } from "./types";
+import type { AnswerRecord, ClarificationTurn, GeneratedQuestion, ReportAgentSseSlice, ReportData } from "./types";
 
 export function getNextUnansweredTurn(turns: ClarificationTurn[]): ClarificationTurn | null {
   return turns.find((turn) => !turn.answer) ?? null;
@@ -76,5 +76,50 @@ export function buildReport(questions: GeneratedQuestion[], answers: AnswerRecor
       .slice(0, 3)
       .map((metric) => `${metric.name}：当前得分 ${metric.score}，建议优先复盘相关错题。`),
     explanations
+  };
+}
+
+/** Mastra/Core 侧的掌握标签（四字）对齐到报告卡的汉字档位。 */
+export function mapServerMasteryLabel(label: string): ReportData["mastery"] {
+  switch (label) {
+    case "精通":
+      return "精通";
+    case "熟练":
+      return "熟练";
+    case "入门":
+      return "接近掌握";
+    case "初学":
+    default:
+      return "需要补基础";
+  }
+}
+
+/** 将报告 SSE（`report_sections` / `report_done`）与本地 buildReport 结果合并展示。 */
+export function mergeReportWithAgentSse(local: ReportData, sse: ReportAgentSseSlice): ReportData {
+  const score = sse.overallScore ?? local.score;
+  const mastery =
+    sse.masteryLabel !== undefined ? mapServerMasteryLabel(sse.masteryLabel) : local.mastery;
+
+  let rationale = local.rationale;
+  if (sse.headline) {
+    rationale = `${sse.headline}\n\n${local.rationale}`;
+  }
+
+  let summary = sse.summary ?? local.summary;
+  if (sse.nextSteps?.length) {
+    summary = `${summary}\n\n下一步建议：`;
+    summary += sse.nextSteps.map((step) => `\n• ${step}`).join("");
+  }
+
+  const weaknesses =
+    sse.weaknessLines && sse.weaknessLines.length > 0 ? sse.weaknessLines : local.weaknesses;
+
+  return {
+    ...local,
+    score,
+    mastery,
+    summary,
+    rationale,
+    weaknesses,
   };
 }

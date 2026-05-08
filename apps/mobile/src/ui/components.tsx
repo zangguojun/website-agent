@@ -68,20 +68,32 @@ export function UserBubble({ label }: { label: string }) {
 export function ChoiceOption({
   label,
   selected,
+  disabled,
   onPress
 }: {
   label: string;
   selected?: boolean;
+  /** 不可用态（对齐设计系统中 ChoiceOption 的 disabled）。 */
+  disabled?: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled: disabled ?? false }}
+      disabled={disabled}
       onPress={onPress}
-      style={[styles.choice, selected && styles.choiceSelected]}
+      style={[styles.choice, selected && styles.choiceSelected, disabled && styles.choiceDisabled]}
     >
-      <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text>
+      <Text
+        style={[
+          styles.choiceText,
+          selected && styles.choiceTextSelected,
+          disabled && styles.choiceTextDisabled
+        ]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -110,19 +122,44 @@ export function PlanCard({ plan }: { plan: TestPlan }) {
   );
 }
 
-export function GenerationStepList({ activeIndex }: { activeIndex: number }) {
+export function GenerationStepList({
+  activeIndex,
+  failedAtIndex
+}: {
+  activeIndex: number;
+  /** 失败时标记的步骤（通常为当前进行中的一步）；与 spec「生成步骤失败态」对齐。 */
+  failedAtIndex?: number | null;
+}) {
   const steps = ["分析主题边界", "划分能力维度", "生成选择题", "校验选项和干扰项", "准备报告框架"];
 
   return (
     <View style={styles.stepCard}>
-      {steps.map((step, index) => (
-        <View key={step} style={styles.stepRow}>
-          <Text style={[styles.stepDot, index <= activeIndex && styles.stepDotActive]}>
-            {index < activeIndex ? "✓" : index === activeIndex ? "•" : "○"}
-          </Text>
-          <Text style={[styles.stepText, index <= activeIndex && styles.stepTextActive]}>{step}</Text>
-        </View>
-      ))}
+      {steps.map((step, index) => {
+        const failed = failedAtIndex !== null && failedAtIndex !== undefined && index === failedAtIndex;
+        return (
+          <View key={step} style={styles.stepRow}>
+            <Text
+              style={[
+                styles.stepDot,
+                index <= activeIndex && styles.stepDotActive,
+                failed && styles.stepDotFailed
+              ]}
+            >
+              {failed ? "!" : index < activeIndex ? "✓" : index === activeIndex ? "•" : "○"}
+            </Text>
+            <Text
+              style={[
+                styles.stepText,
+                index <= activeIndex && styles.stepTextActive,
+                failed && styles.stepTextFailed
+              ]}
+            >
+              {step}
+              {failed ? "（失败）" : ""}
+            </Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -234,8 +271,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   choiceSelected: { backgroundColor: colors.agent, borderColor: colors.primaryBlue },
+  choiceDisabled: { opacity: 0.45 },
   choiceText: { color: colors.text, fontSize: typeScale.body, fontWeight: "700", lineHeight: 22 },
   choiceTextSelected: { color: colors.primaryBlue },
+  choiceTextDisabled: { color: colors.textMuted },
   planCard: { backgroundColor: colors.surface, borderRadius: radius.xl, gap: spacing.md, padding: spacing.lg, ...shadow.card },
   cardEyebrow: { color: colors.primaryBlue, fontSize: typeScale.caption, fontWeight: "900" },
   cardTitle: { color: colors.text, fontSize: typeScale.title, fontWeight: "800", lineHeight: 30 },
@@ -258,8 +297,10 @@ const styles = StyleSheet.create({
   stepRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   stepDot: { color: colors.textSubtle, fontSize: typeScale.body, fontWeight: "900", width: 22 },
   stepDotActive: { color: colors.primaryBlue },
+  stepDotFailed: { color: colors.danger },
   stepText: { color: colors.textSubtle, fontSize: typeScale.body, fontWeight: "700" },
   stepTextActive: { color: colors.text },
+  stepTextFailed: { color: colors.danger },
   questionCard: { backgroundColor: colors.surface, borderRadius: radius.xl, gap: spacing.lg, padding: spacing.lg, ...shadow.card },
   questionText: { color: colors.text, fontSize: 25, fontWeight: "800", lineHeight: 33 },
   optionList: { gap: spacing.sm },

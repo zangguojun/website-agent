@@ -8,11 +8,16 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@website-agent/core": "workspace:*",
+    "@ai-sdk/openai": "^3.0.63",
+    "@clerk/backend": "^3.4.6",
     "@neondatabase/serverless": "latest",
+    "@website-agent/core": "workspace:*",
+    "ai": "^6.0.176",
     "drizzle-orm": "latest",
     "next": "latest",
     "react": "latest",

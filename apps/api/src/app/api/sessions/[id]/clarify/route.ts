@@ -1,5 +1,7 @@
-import { ownerIdFromHeaders } from '../../../../../auth/owner-id';
-import { getSessionForOwner } from '../../../../../db/repositories/sessions.repo';
+import { authenticationErrorResponse } from '../../../../../auth/http-errors';
+import { requireSessionOwnedBy } from '../../../../../auth/session-access';
+import { resolveOwnerId } from '../../../../../auth/resolve-owner';
+import { getSessionById } from '../../../../../db/repositories/sessions.repo';
 import { runClarificationWorkflow } from '../../../../../mastra/workflows/clarification.workflow';
 import { encodeSse, sseResponse } from '../../../../../sse/encode';
 
@@ -9,24 +11,18 @@ type RouteContext = {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const ownerId = ownerIdFromHeaders(request.headers);
+    const ownerId = await resolveOwnerId(request.headers);
     const { id } = await context.params;
-    const session = await getSessionForOwner(ownerId, id);
+    const row = await getSessionById(id);
+    const gate = requireSessionOwnedBy(row, ownerId);
+    if (!gate.ok) return gate.response;
 
-    if (!session) {
-      return Response.json({ error: 'Session not found' }, { status: 404 });
-    }
-
+    const session = gate.session;
     const clarification = await runClarificationWorkflow({ rawTopic: session.rawTopic });
     return sseResponse([encodeSse('clarification', clarification)]);
   } catch (error) {
-    return ownerErrorResponse(error);
+    const unauthorized = authenticationErrorResponse(error);
+    if (unauthorized) return unauthorized;
+    throw error;
   }
-}
-
-function ownerErrorResponse(error: unknown): Response {
-  if (error instanceof Error && error.message === 'Missing owner identity') {
-    return Response.json({ error: error.message }, { status: 401 });
-  }
-  throw error;
 }
